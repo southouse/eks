@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: nginx
-          image: 010447801862.dkr.ecr.ap-northeast-1.amazonaws.com/southouse/nginx:0.0.2-amd64
+          image: # 이미지 URL 입력
           ports:
             - containerPort: 80
           resources:
