@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  annotations:
+    CapacityProvisioned: 0.25vCPU 0.5GB
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      env: dev
+      app: web
+  template:
+    metadata:
+      labels:
+        env: dev
+        app: web
+    spec:
+      containers:
+        - name: nginx
+          image: 010447801862.dkr.ecr.ap-northeast-1.amazonaws.com/southouse/nginx:0.0.2-amd64
+          ports:
+            - containerPort: 80
+          resources:
+            limits:
+              cpu: 0.25
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-service
+  annotations:
+    alb.ingress.kubernetes.io/healthcheck-path: "/healthy.html"
+spec:
+  type: NodePort
+  ports:
+    - targetPort: 80
+      port: 80
+      protocol: TCP
+  selector:
+    env: dev
+    app: web
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nginx-ingress
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: "web-service"
+                port:
+                  number: 80
